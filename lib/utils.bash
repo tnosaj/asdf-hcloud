@@ -6,6 +6,9 @@ GH_REPO="https://github.com/hetznercloud/cli"
 TOOL_NAME="hcloud"
 TOOL_TEST="hcloud version"
 
+# Resolved at source time — always points to plugin root regardless of caller
+_ASDF_PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 fail() {
   echo -e "asdf-$TOOL_NAME: $*"
   exit 1
@@ -74,7 +77,14 @@ install_version() {
 install_completions() {
   local binary="$1"
 
-  # bash-completion 2.x+ auto-sources from XDG_DATA_HOME
+  # zsh: asdf shell integration adds $plugin_dir/completions/ to $FPATH automatically
+  # — no manual fpath setup required
+  local zsh_dir="$_ASDF_PLUGIN_DIR/completions"
+  if mkdir -p "$zsh_dir" 2>/dev/null && "$binary" completion zsh >"$zsh_dir/_$TOOL_NAME" 2>/dev/null; then
+    echo "* Zsh completion installed (asdf FPATH): $zsh_dir/_$TOOL_NAME"
+  fi
+
+  # bash: bash-completion 2.x+ auto-sources from XDG_DATA_HOME
   if command -v bash >/dev/null 2>&1; then
     local bash_dir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
     if mkdir -p "$bash_dir" 2>/dev/null && "$binary" completion bash >"$bash_dir/$TOOL_NAME" 2>/dev/null; then
@@ -82,16 +92,7 @@ install_completions() {
     fi
   fi
 
-  # ~/.zfunc is a common user completion dir; needs fpath entry in .zshrc
-  if command -v zsh >/dev/null 2>&1; then
-    local zsh_dir="${ZDOTDIR:-$HOME}/.zfunc"
-    if mkdir -p "$zsh_dir" 2>/dev/null && "$binary" completion zsh >"$zsh_dir/_$TOOL_NAME" 2>/dev/null; then
-      echo "* Zsh completion installed: $zsh_dir/_$TOOL_NAME"
-      echo "  Ensure .zshrc contains: fpath=(~/.zfunc \$fpath) && autoload -Uz compinit"
-    fi
-  fi
-
-  # XDG_CONFIG_HOME/fish/completions is auto-sourced by fish
+  # fish: XDG_CONFIG_HOME/fish/completions is auto-sourced
   if command -v fish >/dev/null 2>&1; then
     local fish_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fish/completions"
     if mkdir -p "$fish_dir" 2>/dev/null && "$binary" completion fish >"$fish_dir/$TOOL_NAME.fish" 2>/dev/null; then
