@@ -1,6 +1,6 @@
 <div align="center">
 
-# asdf-hcloud [![Build](https://github.com/chessmango/asdf-hcloud/actions/workflows/build.yml/badge.svg)](https://github.com/chessmango/asdf-hcloud/actions/workflows/build.yml) [![Lint](https://github.com/chessmango/asdf-hcloud/actions/workflows/lint.yml/badge.svg)](https://github.com/chessmango/asdf-hcloud/actions/workflows/lint.yml)
+# asdf-hcloud [![Build](https://github.com/tnosaj/asdf-hcloud/actions/workflows/build.yml/badge.svg)](https://github.com/tnosaj/asdf-hcloud/actions/workflows/build.yml) [![Lint](https://github.com/tnosaj/asdf-hcloud/actions/workflows/lint.yml/badge.svg)](https://github.com/tnosaj/asdf-hcloud/actions/workflows/lint.yml)
 
 
 [hcloud](https://github.com/hetznercloud/cli) plugin for the [asdf version manager](https://asdf-vm.com).
@@ -24,7 +24,7 @@
 Plugin:
 
 ```shell
-asdf plugin add hcloud https://github.com/chessmango/asdf-hcloud.git
+asdf plugin add hcloud https://github.com/tnosaj/asdf-hcloud.git
 ```
 
 hcloud:
@@ -50,7 +50,7 @@ install & manage versions.
 
 Contributions of any kind welcome! See the [contributing guide](contributing.md).
 
-[Thanks goes to these contributors](https://github.com/chessmango/asdf-hcloud/graphs/contributors)!
+[Thanks goes to these contributors](https://github.com/tnosaj/asdf-hcloud/graphs/contributors)!
 
 # License
 

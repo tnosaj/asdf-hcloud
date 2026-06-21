@@ -62,11 +62,42 @@ install_version() {
 
     test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
 
+    install_completions "$install_path/bin/$tool_cmd"
+
     echo "$TOOL_NAME $version installation was successful!"
   ) || (
     rm -rf "$install_path"
     fail "An error ocurred while installing $TOOL_NAME $version."
   )
+}
+
+install_completions() {
+  local binary="$1"
+
+  # bash-completion 2.x+ auto-sources from XDG_DATA_HOME
+  if command -v bash >/dev/null 2>&1; then
+    local bash_dir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
+    if mkdir -p "$bash_dir" 2>/dev/null && "$binary" completion bash >"$bash_dir/$TOOL_NAME" 2>/dev/null; then
+      echo "* Bash completion installed: $bash_dir/$TOOL_NAME"
+    fi
+  fi
+
+  # ~/.zfunc is a common user completion dir; needs fpath entry in .zshrc
+  if command -v zsh >/dev/null 2>&1; then
+    local zsh_dir="${ZDOTDIR:-$HOME}/.zfunc"
+    if mkdir -p "$zsh_dir" 2>/dev/null && "$binary" completion zsh >"$zsh_dir/_$TOOL_NAME" 2>/dev/null; then
+      echo "* Zsh completion installed: $zsh_dir/_$TOOL_NAME"
+      echo "  Ensure .zshrc contains: fpath=(~/.zfunc \$fpath) && autoload -Uz compinit"
+    fi
+  fi
+
+  # XDG_CONFIG_HOME/fish/completions is auto-sourced by fish
+  if command -v fish >/dev/null 2>&1; then
+    local fish_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fish/completions"
+    if mkdir -p "$fish_dir" 2>/dev/null && "$binary" completion fish >"$fish_dir/$TOOL_NAME.fish" 2>/dev/null; then
+      echo "* Fish completion installed: $fish_dir/$TOOL_NAME.fish"
+    fi
+  fi
 }
 
 get_platform() {
@@ -80,14 +111,14 @@ get_arch() {
   "x86_64")
     echo "amd64"
     ;;
-  "arm")
-    echo "armv7" # Super best effort - TODO: find useful way to split armv6/armv7 maybe
+  "armv7l" | "armv6l" | "arm")
+    echo "arm"
     ;;
   "aarch64" | "arm64")
     echo "arm64"
     ;;
   *)
-    exit 1
+    fail "Architecture $(uname -m) is not supported by asdf-$TOOL_NAME"
     ;;
   esac
 }
@@ -96,5 +127,5 @@ extract() {
   local file download_path
   file="$1"
   download_path="$2"
-  tar -xzf "$file" -C "$download_path"
+  tar -xzf "$file" -C "$download_path" || fail "Could not extract $file — archive may be corrupt or incomplete"
 }
